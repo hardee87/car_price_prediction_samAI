@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Price Predictor</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; color: #f8fafc; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 32px; width: 100%; max-width: 520px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5); }
+        .card-header { text-align: center; margin-bottom: 28px; }
+        .card-header h2 { font-size: 1.75rem; font-weight: 700; color: #38bdf8; letter-spacing: -0.025em; }
+        .card-header p { color: #94a3b8; font-size: 0.875rem; margin-top: 6px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .full-width { grid-column: span 2; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 0.85rem; font-weight: 600; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em; }
+        input, select { width: 100%; background: #0f172a; border: 1px solid #475569; border-radius: 8px; padding: 12px; color: #f8fafc; font-size: 0.95rem; transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+        input:focus, select:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2); }
+        button { grid-column: span 2; margin-top: 10px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.1s, background 0.2s; }
+        button:hover { background: linear-gradient(135deg, #0369a1 0%, #075985 100%); transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+        .result-box { grid-column: span 2; margin-top: 20px; padding: 16px; border-radius: 10px; background: rgba(56, 189, 248, 0.1); border: 1px solid #38bdf8; text-align: center; display: none; }
+        .result-title { font-size: 0.8rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; }
+        .result-value { font-size: 1.5rem; font-weight: 700; color: #38bdf8; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Car Price Predictor</h2>
+        <p>Enter vehicle specs below to compute market value</p>
+    </div>
+
+    <form id="predictionForm" class="grid">
+        <div class="form-group">
+            <label>Showroom Price (Lakhs)</label>
+            <input type="number" step="0.01" name="present_price" placeholder="e.g. 7.5" required>
+        </div>
+
+        <div class="form-group">
+            <label>Kilometers Driven</label>
+            <input type="number" name="driven_kms" placeholder="e.g. 25000" required>
+        </div>
+
+        <div class="form-group">
+            <label>Car Age (Years)</label>
+            <input type="number" name="car_age" placeholder="e.g. 3" required>
+        </div>
+
+        <div class="form-group">
+            <label>Previous Owners</label>
+            <input type="number" name="owner" placeholder="0, 1, 2..." required>
+        </div>
+
+        <div class="form-group">
+            <label>Fuel Type</label>
+            <select name="fuel_type">
+                <option value="Petrol">Petrol</option>
+                <option value="Diesel">Diesel</option>
+                <option value="CNG">CNG</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Seller Type</label>
+            <select name="selling_type">
+                <option value="Dealer">Dealer</option>
+                <option value="Individual">Individual</option>
+            </select>
+        </div>
+
+        <div class="form-group full-width">
+            <label>Transmission</label>
+            <select name="transmission">
+                <option value="Manual">Manual</option>
+                <option value="Automatic">Automatic</option>
+            </select>
+        </div>
+
+        <button type="submit">Predict Price</button>
+
+        <div id="resultBox" class="result-box">
+            <div class="result-title">Estimated Market Value</div>
+            <div id="resultValue" class="result-value">₹0.00 Lakhs</div>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const response = await fetch('/predict', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        const resultBox = document.getElementById('resultBox');
+        const resultValue = document.getElementById('resultValue');
+        
+        if (data.price !== undefined) {
+            resultValue.innerText = `₹${data.price} Lakhs`;
+            resultBox.style.display = 'block';
+        } else {
+            resultValue.innerText = "Error calculating price";
+            resultBox.style.display = 'block';
+        }
+    });
+</script>
+
+</body>
+</html>
